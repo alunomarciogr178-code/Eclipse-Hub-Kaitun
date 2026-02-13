@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local LP = Players.LocalPlayer
 
 local function Tween(cf, speed)
@@ -35,7 +36,8 @@ end
 local function EquipWeapon()
     if _G.SelectedWeapon then
         pcall(function()
-            LP.Character.Humanoid:EquipTool(LP.Backpack:FindFirstChild(_G.SelectedWeapon))
+            local tool = LP.Backpack:FindFirstChild(_G.SelectedWeapon) or LP.Character:FindFirstChild(_G.SelectedWeapon)
+            if tool then LP.Character.Humanoid:EquipTool(tool) end
         end)
     end
 end
@@ -51,13 +53,13 @@ task.spawn(function()
     end
 end)
 
-local FarmingTab = Window:AddTab("Farming")
-local BossTab = Window:AddTab("Bosses")
-local ItemsTab = Window:AddTab("Items")
-local MasteryTab = Window:AddTab("Mastery")
-local VisualTab = Window:AddTab("Visuals")
-local MiscTab = Window:AddTab("Misc")
-local SettingsTab = Window:AddTab("Settings")
+local FarmingTab = Window:AddTab({Title = "⚔️ Farming"})
+local BossTab = Window:AddTab({Title = "💀 Bosses"})
+local ItemsTab = Window:AddTab({Title = "🗡️ Items"})
+local MasteryTab = Window:AddTab({Title = "🔥 Mastery"})
+local VisualTab = Window:AddTab({Title = "👁️ Visuals"})
+local MiscTab = Window:AddTab({Title = "🛠️ Misc"})
+local SettingsTab = Window:AddTab({Title = "⚙️ Settings"})
 
 local FarmLeft = FarmingTab:AddLeftGroupbox("Main Farms")
 FarmLeft:AddToggle("AutoCakePrince", {Text = "Auto Cake Prince", Default = false, Callback = function(v) _G.AutoCakePrince = v end})
@@ -86,7 +88,7 @@ ItemsLeft:AddToggle("AutoTushita", {Text = "Auto Tushita", Default = false, Call
 
 local MasteryLeft = MasteryTab:AddLeftGroupbox("Mastery Farms")
 MasteryLeft:AddToggle("AutoMasteryFruit", {Text = "Auto Mastery Fruit", Default = false, Callback = function(v) _G.AutoMasteryFruit = v end})
-MasteryLeft:AddToggle("AutoMasterySword", {Text = "Auto Mastery Sword", Defaultilag = false, Callback = function(v) _G.AutoMasterySword = v end})
+MasteryLeft:AddToggle("AutoMasterySword", {Text = "Auto Mastery Sword", Default = false, Callback = function(v) _G.AutoMasterySword = v end})
 MasteryLeft:AddToggle("AutoMasteryGun", {Text = "Auto Mastery Gun", Default = false, Callback = function(v) _G.AutoMasteryGun = v end})
 
 local VisualLeft = VisualTab:AddLeftGroupbox("ESP Controls")
@@ -96,8 +98,7 @@ VisualLeft:AddToggle("FlowerESP", {Text = "Flower ESP", Default = false, Callbac
 VisualLeft:AddToggle("ChestESP", {Text = "Chest ESP", Default = false, Callback = function(v) _G.ChestESP = v end})
 
 local MiscLeft = MiscTab:AddLeftGroupbox("Misc Features")
-MiscLeft:AddToggle("AutoQuest", {Text = "Auto Accept Quests", Default = false, Callback = function(v) _G.AutoQuest = v end})
-MiscLeft:AddButton({Text = "Server Hop", Func = function() game:GetService("TeleportService"):Teleport(game.PlaceId) end})
+MiscLeft:AddButton({Text = "Server Hop", Func = function() game:GetService("TeleportService"):Teleport(game.PlaceId, LP) end})
 
 local SettingsLeft = SettingsTab:AddLeftGroupbox("UI Controls")
 SettingsLeft:AddToggle("ToggleUI", {Text = "Toggle UI Visibility", Default = true, Callback = function(v) SeaHub.ToggleUI() end})
@@ -112,14 +113,14 @@ task.spawn(function()
                 if string.find(status, "open") or Workspace.Enemies:FindFirstChild("Cake Prince") then
                     for _,v in pairs(Workspace.Enemies:GetChildren()) do
                         if v.Name == "Cake Prince" then
-                            Tween(v.HumanoidRootPart.CFrame * CFrame.new(0,30,0))
+                            Tween(v.HumanoidRootPart.CFrame * CFrame.new(0,30,10))
                             BringMob(v)
                         end
                     end
                 else
                     Tween(CFrame.new(-1826, 73, -12326))
                     for _,v in pairs(Workspace.Enemies:GetChildren()) do
-                        if string.find(v.Name, "Cookie") or string.find(v.Name, "Cake") or string.find(v.Name, "Chocolate") then
+                        if v.Name:find("Cookie") or v.Name:find("Cake") or v.Name:find("Chocolate") or v.Name:find("Crafter") then
                             BringMob(v)
                         end
                     end
@@ -136,7 +137,7 @@ task.spawn(function()
                 EquipWeapon()
                 Tween(CFrame.new(-9515, 164, 5785))
                 for _,v in pairs(Workspace.Enemies:GetChildren()) do
-                    if string.find(v.Name, "Skeleton") or string.find(v.Name, "Zombie") or string.find(v.Name, "Demonic") then
+                    if v.Name:find("Skeleton") or v.Name:find("Zombie") or v.Name:find("Demonic") or v.Name:find("Possessed") then
                         BringMob(v)
                     end
                 end
@@ -151,11 +152,9 @@ task.spawn(function()
             pcall(function()
                 EquipWeapon()
                 Tween(CFrame.new(-5420, 15, -2800))
-                if Workspace.Enemies:FindFirstChild("Awakened Ice Admiral") then
-                    for _,v in pairs(Workspace.Enemies:GetChildren()) do
-                        if v.Name == "Awakened Ice Admiral" then
-                            BringMob(v)
-                        end
+                for _,v in pairs(Workspace.Enemies:GetChildren()) do
+                    if v.Name == "Awakened Ice Admiral" or v.Name == "Snow Lurker" or v.Name == "Arctic Warrior" then
+                        BringMob(v)
                     end
                 end
             end)
@@ -179,6 +178,35 @@ task.spawn(function()
     end
 end)
 
+local BossCFrames = {
+    DonSwan = CFrame.new(2285, 15, 805),
+    CakeQueen = CFrame.new(-821, 66, -10966),
+    TideKeeper = CFrame.new(-3915, 38, -9730),
+    rip_indra = CFrame.new(-5345, 315, -7800),
+    Longma = CFrame.new(-10250, 350, -9350)
+}
+
+for name, pos in pairs(BossCFrames) do
+    task.spawn(function()
+        local flagName = "Auto" .. name:gsub("_", ""):gsub("ripind ra", "RipIndra")
+        while task.wait(0.5) do
+            if _G["Auto"..name:gsub(" ", ""):gsub("rip_indra", "RipIndra")] or _G[flagName] then
+                pcall(function()
+                    EquipWeapon()
+                    local bossName = name:gsub("_", " ")
+                    local boss = Workspace.Enemies:FindFirstChild(bossName) or Workspace.Enemies:FindFirstChild(name)
+                    if boss then
+                        Tween(boss.HumanoidRootPart.CFrame * CFrame.new(0,30,10))
+                        BringMob(boss)
+                    else
+                        Tween(pos)
+                    end
+                end)
+            end
+        end
+    end)
+end
+
 task.spawn(function()
     while task.wait(1) do
         if _G.PlayerESP then
@@ -196,13 +224,13 @@ task.spawn(function()
                         txt.TextColor3 = Color3.new(1,0,0)
                         txt.Text = p.Name
                     end
-                    local dist = math.floor((p.Character.HumanoidRootPart.Position - LP.Character.HumanoidRootPart.Position).Magnitude / 3)
+                    local dist = math.floor((p.Character.HumanoidRootPart.Position - LP.Character.HumanoidRootPart.Position).Magnitude)
                     p.Character.Head.ESPBill.TextLabel.Text = p.Name .. " | " .. dist .. "m"
                 end
             end
         else
             for _,p in pairs(Players:GetPlayers()) do
-                if p.Character and p.Character:FindFirstChild("Head") and p.Character.Head:FindFirstChild("ESPBill") then
+                if p.Character and p.Character.Head:FindFirstChild("ESPBill") then
                     p.Character.Head.ESPBill:Destroy()
                 end
             end
@@ -214,14 +242,14 @@ task.spawn(function()
     while task.wait(1) do
         if _G.FruitESP then
             for _,v in pairs(Workspace:GetChildren()) do
-                if v:FindFirstChild("Handle") and string.find(v.Name, "Fruit") then
+                if v:FindFirstChild("Handle") and v.Name:find("Fruit") then
                     if not v.Handle:FindFirstChild("FruitESP") then
                         local bill = Instance.new("BillboardGui", v.Handle)
                         bill.Name = "FruitESP"
                         bill.AlwaysOnTop = true
                         bill.Size = UDim2.new(0,200,0,50)
                         local txt = Instance.new("TextLabel", bill)
-                        txt.Text = v.Name .. " Fruit"
+                        txt.Text = v.Name
                         txt.TextColor3 = Color3.new(0,1,0)
                         txt.BackgroundTransparency = 1
                     end
@@ -235,7 +263,7 @@ task.spawn(function()
     while task.wait(1) do
         if _G.FlowerESP then
             for _,v in pairs(Workspace:GetChildren()) do
-                if string.find(v.Name, "Flower") then
+                if v.Name:find("Flower") then
                     if not v:FindFirstChild("FlowerESP") then
                         local bill = Instance.new("BillboardGui", v)
                         bill.Name = "FlowerESP"
@@ -243,6 +271,7 @@ task.spawn(function()
                         local txt = Instance.new("TextLabel", bill)
                         txt.Text = v.Name
                         txt.TextColor3 = Color3.new(1,0.5,0)
+                        txt.BackgroundTransparency = 1
                     end
                 end
             end
@@ -250,4 +279,4 @@ task.spawn(function()
     end
 end)
 
-SeaHub:Notify({Title = "Eclipse Hub", Desc = "Carregado com sucesso!", ShowTime = 5})
+SeaHub:Notify({Title = "Eclipse Hub", Desc = "Carregado com sucesso! By Kira", ShowTime = 5})
